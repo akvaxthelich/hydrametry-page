@@ -12,7 +12,7 @@ import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js'
 // 
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
-
+//comment
 // Scene
 const scene = new THREE.Scene()
 
