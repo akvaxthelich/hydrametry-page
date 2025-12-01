@@ -14,25 +14,91 @@ import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js'
 const canvas = document.querySelector('canvas.webgl')
 //comment
 // Scene
+const gui = new GUI()
 const scene = new THREE.Scene()
 
 const textureLoader = new THREE.TextureLoader()
+const fontLoader = new FontLoader()
 
-const matcapTexture = textureLoader.load('/textures/matcaps/10.png')
-matcapTexture.colorSpace = THREE.SRGBColorSpace
+
 /**
  * Object
  * Prims can be found in BufferGeometry docs
  */
 
-const geometry = new THREE.BoxGeometry(1, 1, 1, 2, 2, 2)
-const material = new THREE.MeshBasicMaterial()
+/**
+ * Lights
+ */
 
-const fontLoader = new FontLoader()
+//Ambient
+const ambientLight = new THREE.AmbientLight(0x6fbf2f, 1) 
+scene.add(ambientLight)
+gui.add(ambientLight, 'intensity').min(0).max(3).step(0.001)
 
+const directionalLight = new THREE.DirectionalLight(0x00fffc, 0.9)
+scene.add(directionalLight)
+directionalLight.position.set(1,.25,0)
+
+const hemisphereLight = new THREE.HemisphereLight(0x6fbf2f, 0x001100, 0.9)
+scene.add(hemisphereLight)
+
+const pointLight = new THREE.PointLight(0xff9000, 1.5, 0, 2)
+scene.add(pointLight)
+
+//Rect area light like photoshoot
+const rectAreaLight = new THREE.RectAreaLight(0x4e00ff,6,1,1)
+scene.add(rectAreaLight)
+rectAreaLight.position.set(-1.5, 0, 1.5)
+rectAreaLight.lookAt(new THREE.Vector3())
+
+const spotLight = new THREE.SpotLight(0x78ff00, 4.5,10, Math.PI * 0.1, 0.25, 1)
+spotLight.position.set(0, 2, 3)
+scene.add(spotLight.target)
+scene.add(spotLight)
+
+const hemisphereLightHelper = new THREE.HemisphereLightHelper(hemisphereLight, 0.2)
+const directionalLightHelper = new THREE.DirectionalLightHelper(directionalLight, 0.2)
+const pointLightHelper = new THREE.PointLightHelper(pointLight, 0.2)
+const spotLightHelper = new THREE.SpotLightHelper(spotLight)
+
+scene.add(hemisphereLightHelper)
+scene.add(directionalLightHelper)
+scene.add(pointLightHelper)
+scene.add(spotLightHelper)
+/**
+ * Lighting Test Objects
+ */
+const litMaterial = new THREE.MeshStandardMaterial({
+    roughness: 0.4
+})
+const sphere = new THREE.Mesh(
+    new THREE.SphereGeometry(0.5, 64, 64),
+    litMaterial
+)
+sphere.position.x = -1.5
+const box = new THREE.Mesh(
+    new THREE.BoxGeometry(1,1,1),
+    litMaterial
+)
+sphere.position.x = -1.5
+
+const torus = new THREE.Mesh(
+    new THREE.TorusGeometry(0.3, 0.2, 64, 128),
+    litMaterial
+)
+torus.position.x = 1.5
+const group = new THREE.Group()
+group.position.z = -2
+
+group.add(sphere, torus, box)
+scene.add(group)
+
+
+const matcapTexture = textureLoader.load('/textures/matcaps/10.png')
+matcapTexture.colorSpace = THREE.SRGBColorSpace
 const textAndTorusMat = new THREE.MeshMatcapMaterial({matcap:matcapTexture, wireframe: false})
 
-
+let textMesh
 fontLoader.load(
     '/fonts/kenyan_coffee/KenyanCoffeeRegular.json',
     (font) => 
@@ -56,34 +122,18 @@ fontLoader.load(
         //     - textGeometry.boundingBox.max.y * 0.5,
         //     - textGeometry.boundingBox.max.z * 0.5)
         textGeometry.center() // ^ same as the above
-        console.log(textGeometry.boundingBox)
+
         
-                const text = new THREE.Mesh(textGeometry, textAndTorusMat)
+                const textMesh = new THREE.Mesh(textGeometry, litMaterial)
+                textMesh.position.y = -.6
         
-        scene.add(text)
-        const torusGeom = new THREE.TorusGeometry(0.3, 0.2, 20, 45)
-        for(let i = 0; i< 33; i++){
-            
-            const torusMesh = new THREE.Mesh(torusGeom, textAndTorusMat)
-            torusMesh.position.x = (Math.random() - 0.5) * 10
-            torusMesh.position.y = (Math.random() - 0.5) * 10
-            torusMesh.position.z = (Math.random() - 0.5) * 10
-            
-            torusMesh.rotation.x = Math.random() * Math.PI
-            torusMesh.rotation.y = Math.random() * Math.PI
-
-            const scale = Math.random()
-            torusMesh.scale.set(scale,scale,scale)
-
-            scene.add(torusMesh)
-
-        }
+        scene.add(textMesh)
         const cubeGeom = new THREE.BoxGeometry(1,1,1)
-        for(let i = 0; i< 33; i++){
+        for(let i = 0; i< 100; i++){
             
             const cubeMesh = new THREE.Mesh(cubeGeom, textAndTorusMat)
 
-            cubeMesh.position.set((Math.random() - 0.5) * 10,(Math.random() - 0.5) * 10,(Math.random() - 0.5) * 10)
+            cubeMesh.position.set((Math.random() - 0.5) * 100,(Math.random() - 0.5) * 100,(Math.random() - 0.5) * 100)
 
             cubeMesh.rotation.x = Math.random() * Math.PI
             cubeMesh.rotation.y = Math.random() * Math.PI
@@ -97,27 +147,20 @@ fontLoader.load(
     }
 )
 
+/**
+ * Floor Plane
+ */
+const planeMat = new THREE.MeshBasicMaterial({wireframe:true, side: THREE.DoubleSide, color: 0x6fbf2f})
 
-
- const mesh = new THREE.Mesh(geometry, material)
-
-// const sphere = new THREE.Mesh(
-//     new THREE.SphereGeometry(0.5, 64, 64),
-//     material
-// )
-// sphere.position.x = -1.5
-
-// const plane = new THREE.Mesh(
-//     new THREE.PlaneGeometry(1,1, 100, 100),
-//     material
-// )
-// const torus = new THREE.Mesh(
-//     new THREE.TorusGeometry(0.3, 0.2, 64, 128),
-//     material
-// )
-// torus.position.x = 1.5
-// scene.add(sphere, plane, torus)
-
+const plane = new THREE.Mesh(
+    new THREE.PlaneGeometry(1,1, 50, 50),
+    planeMat
+)
+plane.rotation.x = - Math.PI / 2 
+plane.position.y = -1
+const planeScale = 75
+plane.scale.set(planeScale,planeScale,planeScale)
+scene.add(plane)
 /**
  * Renderer
  */
@@ -212,9 +255,6 @@ renderer.setSize(sizes.width, sizes.height)
 const controls = new OrbitControls(camera, canvas)
 
 controls.enableDamping = true
-//Delta time bit (let used here since this var changes)
-
-
 
 let time = Date.now() //init here
 
@@ -230,14 +270,9 @@ const tick = () => {
     const currentTime = Date.now()
     const deltaTime = currentTime - time 
     time = currentTime //update our outside var
-    //update object 
-    // sphere.rotation.y = 0.1 * elapsedTime
-    // plane.rotation.y = 0.1 * elapsedTime
-    // torus.rotation.y = 0.1 * elapsedTime
+
     
-    // sphere.rotation.x = -0.15 * elapsedTime
-    // plane.rotation.x = -0.15 * elapsedTime
-    // torus.rotation.x = -0.15 * elapsedTime
+
     
 
     controls.update()
