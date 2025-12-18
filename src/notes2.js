@@ -22,6 +22,45 @@ loadingManager.onError = () => {
     console.log('loading error')
 }
 
+
+//lighting
+const ambientLight = new THREE.AmbientLight(0x6fbf2f, 1) 
+// scene.add(ambientLight)
+// gui.add(ambientLight, 'intensity').min(0).max(3).step(0.001)
+
+// const directionalLight = new THREE.DirectionalLight(0x00fffc, 0.9)
+// scene.add(directionalLight)
+// directionalLight.position.set(1,.25,0)
+
+// const hemisphereLight = new THREE.HemisphereLight(0x6fbf2f, 0x001100, 0.9)
+// scene.add(hemisphereLight)
+
+// const pointLight = new THREE.PointLight(0xff9000, 1.5, 0, 2)
+// scene.add(pointLight)
+
+// //Rect area light like photoshoot
+// const rectAreaLight = new THREE.RectAreaLight(0x4e00ff,6,1,1)
+// scene.add(rectAreaLight)
+// rectAreaLight.position.set(-1.5, 0, 1.5)
+// rectAreaLight.lookAt(new THREE.Vector3())
+
+// const spotLight = new THREE.SpotLight(0x78ff00, 4.5,10, Math.PI * 0.1, 0.25, 1)
+// spotLight.position.set(0, 2, 3)
+// scene.add(spotLight.target)
+// scene.add(spotLight)
+
+// const hemisphereLightHelper = new THREE.HemisphereLightHelper(hemisphereLight, 0.2)
+// const directionalLightHelper = new THREE.DirectionalLightHelper(directionalLight, 0.2)
+// const pointLightHelper = new THREE.PointLightHelper(pointLight, 0.2)
+// const spotLightHelper = new THREE.SpotLightHelper(spotLight)
+// const rectAreaLightHelper = new RectAreaLightHelper(rectAreaLight)
+
+// scene.add(hemisphereLightHelper)
+// scene.add(directionalLightHelper)
+// scene.add(pointLightHelper)
+// scene.add(spotLightHelper)
+// scene.add(rectAreaLightHelper)
+
 const textureLoader = new THREE.TextureLoader(loadingManager) //mutualization + notify when multiple images are loaded
 //can send three functions after the path, in order they are finished, loading, and error
 //const colorTexture = textureLoader.load('/textures/door/color.jpg') 

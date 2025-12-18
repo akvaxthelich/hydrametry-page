@@ -5,7 +5,10 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import GUI from 'lil-gui'
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js'
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js'
+import { RectAreaLightHelper } from 'three/examples/jsm/helpers/RectAreaLightHelper.js'
 
+import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 // import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js'
 
 
@@ -24,13 +27,13 @@ const fontLoader = new FontLoader()
 /**
  * Object
  * Prims can be found in BufferGeometry docs
+ * 
  */
-
+const fbxl = new FBXLoader()
+const gltfl = new GLTFLoader()
 /**
  * Lights
  */
-
-//Ambient
 const ambientLight = new THREE.AmbientLight(0x6fbf2f, 1) 
 scene.add(ambientLight)
 gui.add(ambientLight, 'intensity').min(0).max(3).step(0.001)
@@ -60,44 +63,42 @@ const hemisphereLightHelper = new THREE.HemisphereLightHelper(hemisphereLight, 0
 const directionalLightHelper = new THREE.DirectionalLightHelper(directionalLight, 0.2)
 const pointLightHelper = new THREE.PointLightHelper(pointLight, 0.2)
 const spotLightHelper = new THREE.SpotLightHelper(spotLight)
+const rectAreaLightHelper = new RectAreaLightHelper(rectAreaLight)
 
-scene.add(hemisphereLightHelper)
-scene.add(directionalLightHelper)
-scene.add(pointLightHelper)
-scene.add(spotLightHelper)
-/**
- * Lighting Test Objects
- */
-const litMaterial = new THREE.MeshStandardMaterial({
-    roughness: 0.4
-})
-const sphere = new THREE.Mesh(
-    new THREE.SphereGeometry(0.5, 64, 64),
-    litMaterial
-)
-sphere.position.x = -1.5
-const box = new THREE.Mesh(
-    new THREE.BoxGeometry(1,1,1),
-    litMaterial
-)
-sphere.position.x = -1.5
-
-const torus = new THREE.Mesh(
-    new THREE.TorusGeometry(0.3, 0.2, 64, 128),
-    litMaterial
-)
-torus.position.x = 1.5
-const group = new THREE.Group()
-group.position.z = -2
-
-group.add(sphere, torus, box)
-scene.add(group)
-
-
-const matcapTexture = textureLoader.load('/textures/matcaps/10.png')
+// scene.add(hemisphereLightHelper)
+// scene.add(directionalLightHelper)
+// scene.add(pointLightHelper)
+// scene.add(spotLightHelper)
+// scene.add(rectAreaLightHelper)
+//Ambient
+const matcapTexture = textureLoader.load('/textures/matcaps/11.png')
 matcapTexture.colorSpace = THREE.SRGBColorSpace
-const textAndTorusMat = new THREE.MeshMatcapMaterial({matcap:matcapTexture, wireframe: false})
-
+const textMat = new THREE.MeshMatcapMaterial({matcap:matcapTexture, wireframe: false})
+// let fbx = null
+// fbxl.load(
+//     '/models/Spatoo/spatoo.fbx',
+// (fbx) => {
+//     scene.add(fbx)
+//     fbx.position.set(0, 6, -15)
+//     fbx.rotation.z = Math.PI / 4      
+//     console.log(fbx)
+// })
+let hydraScene
+gltfl.load(
+    '/models/hydra/hydra.gltf',
+    (gltf) => {
+        scene.add(gltf.scene)
+        gltf.scene.children[0].material = textMat
+        gltf.scene.rotation.y = Math.PI / 2
+        gltf.scene.position.z = -10
+        gltf.scene.position.y = 3
+        console.log(gltf)
+        hydraScene = gltf.scene
+    }
+)
+/**
+ * Hydrametry Text
+ */
 let textMesh
 fontLoader.load(
     '/fonts/kenyan_coffee/KenyanCoffeeRegular.json',
@@ -106,13 +107,14 @@ fontLoader.load(
         const textGeometry = new TextGeometry(
         'Hydrametry Software', {
         font: font,
-        size: 0.5,
+        size: 2,
         depth: 0.1,
         curveSegments: 12,
         bevelSize: 0.02,
         bevelThickness: 0.15,
         bevelOffset: 0,
-        bevelEnabled: true
+        bevelEnabled: true,
+        
         
             }
         )
@@ -124,14 +126,16 @@ fontLoader.load(
         textGeometry.center() // ^ same as the above
 
         
-                const textMesh = new THREE.Mesh(textGeometry, litMaterial)
-                textMesh.position.y = -.6
+                const textMesh = new THREE.Mesh(textGeometry, textMat)
+                textMesh.position.y = 1.5
+                textMesh.position.z = -10
         
         scene.add(textMesh)
         const cubeGeom = new THREE.BoxGeometry(1,1,1)
         for(let i = 0; i< 100; i++){
             
-            const cubeMesh = new THREE.Mesh(cubeGeom, textAndTorusMat)
+            const cubeMesh = new THREE.Mesh(
+                cubeGeom, textMat)
 
             cubeMesh.position.set((Math.random() - 0.5) * 100,(Math.random() - 0.5) * 100,(Math.random() - 0.5) * 100)
 
@@ -158,7 +162,7 @@ const plane = new THREE.Mesh(
 )
 plane.rotation.x = - Math.PI / 2 
 plane.position.y = -1
-const planeScale = 75
+const planeScale = 200
 plane.scale.set(planeScale,planeScale,planeScale)
 scene.add(plane)
 /**
@@ -185,10 +189,11 @@ const lookSpeed = 5
  */
 //small angles 'zoom' (obvious)
 //wide angles have to squeeze more into the camera view, thus 'fisheye'. usually 45-75 is good
-const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 1, 100)
+const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 200)
 
 // const camera = new THREE.OrthographicCamera(-1 * aspectRatio, 1 * aspectRatio, 1, -1, 0.1, 100)
-camera.position.z = 3
+camera.position.z = 0
+camera.position.y = 3
 scene.add(camera)
 
 /**
@@ -250,7 +255,7 @@ window.addEventListener('dblclick', (event) => {
 
 
 renderer.setSize(sizes.width, sizes.height)
-// renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 //controls
 const controls = new OrbitControls(camera, canvas)
 
@@ -266,16 +271,14 @@ const clock = new THREE.Clock()
 const tick = () => {
 
     const elapsedTime = clock.getElapsedTime()
-    //Time
-    const currentTime = Date.now()
-    const deltaTime = currentTime - time 
-    time = currentTime //update our outside var
-
+    //Time 
+    const deltaTime = elapsedTime - time 
+    time = elapsedTime //update our outside var
     
-
-    
-
-    controls.update()
+    if(hydraScene){
+        hydraScene.rotation.y += deltaTime * .5
+    }
+        controls.update()
 
     renderer.render(scene, camera)
 
