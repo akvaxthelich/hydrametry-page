@@ -1,5 +1,6 @@
 import './style.css'
 import * as THREE from 'three'
+import * as UTILS from './UTILS.js'
 import gsap from 'gsap'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import GUI from 'lil-gui'
@@ -11,32 +12,26 @@ import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 // import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js'
 
-
-// 
-// Canvas
-const canvas = document.querySelector('canvas.webgl')
-//comment
-// Scene
-const gui = new GUI()
-const scene = new THREE.Scene()
-
-const textureLoader = new THREE.TextureLoader()
-const fontLoader = new FontLoader()
-
-
-/**
- * Object
- * Prims can be found in BufferGeometry docs
- * 
- */
+//Loaders
 const fbxl = new FBXLoader()
 const gltfl = new GLTFLoader()
-/**
- * Lights
- */
+const textureLoader = new THREE.TextureLoader()
+const fontLoader = new FontLoader()
+// const gui = new GUI()
+// Canvas
+const canvas = document.querySelector('canvas.webgl')
+
+
+// Scene
+
+const scene = new THREE.Scene()
+let currentScene = scene
+
+
+
 const ambientLight = new THREE.AmbientLight(0x6fbf2f, 1) 
 scene.add(ambientLight)
-gui.add(ambientLight, 'intensity').min(0).max(3).step(0.001)
+// gui.add(ambientLight, 'intensity').min(0).max(3).step(0.001)
 
 const directionalLight = new THREE.DirectionalLight(0x00fffc, 0.9)
 scene.add(directionalLight)
@@ -90,7 +85,7 @@ gltfl.load(
         scene.add(gltf.scene)
         gltf.scene.children[0].material = textMat
         gltf.scene.rotation.y = Math.PI / 2
-        gltf.scene.position.z = -10
+        gltf.scene.position.z = -20
         gltf.scene.position.y = 3
         console.log(gltf)
         hydraScene = gltf.scene
@@ -107,17 +102,14 @@ fontLoader.load(
         const textGeometry = new TextGeometry(
         'Hydrametry Software', {
         font: font,
-        size: 2,
+        size: 1,
         depth: 0.1,
         curveSegments: 12,
         bevelSize: 0.02,
         bevelThickness: 0.15,
         bevelOffset: 0,
         bevelEnabled: true,
-        
-        
-            }
-        )
+            })
         textGeometry.computeBoundingBox() //doing the translation on the geometry itself makes sure that the geom is centered in the mesh 
         // textGeometry.translate(
         //     - textGeometry.boundingBox.max.x * 0.5,
@@ -127,12 +119,12 @@ fontLoader.load(
 
         
                 const textMesh = new THREE.Mesh(textGeometry, textMat)
-                textMesh.position.y = 1.5
+                textMesh.position.y = 5
                 textMesh.position.z = -10
         
         scene.add(textMesh)
         const cubeGeom = new THREE.BoxGeometry(1,1,1)
-        for(let i = 0; i< 100; i++){
+        for(let i = 0; i< 500; i++){
             
             const cubeMesh = new THREE.Mesh(
                 cubeGeom, textMat)
@@ -155,16 +147,31 @@ fontLoader.load(
  * Floor Plane
  */
 const planeMat = new THREE.MeshBasicMaterial({wireframe:true, side: THREE.DoubleSide, color: 0x6fbf2f})
-
+const planeScale = 1000
 const plane = new THREE.Mesh(
-    new THREE.PlaneGeometry(1,1, 50, 50),
+    new THREE.PlaneGeometry(1,1, 100, 100),
     planeMat
 )
 plane.rotation.x = - Math.PI / 2 
-plane.position.y = -1
-const planeScale = 200
+plane.position.y = -15
 plane.scale.set(planeScale,planeScale,planeScale)
 scene.add(plane)
+
+const plane2 = new THREE.Mesh(
+    new THREE.PlaneGeometry(1,1, 100, 100),
+    planeMat
+)
+plane2.rotation.x = - Math.PI / 2 
+plane2.position.y = 15
+
+plane2.scale.set(planeScale,planeScale,planeScale)
+scene.add(plane2)
+
+
+/**
+ * Lights
+ */
+
 /**
  * Renderer
  */
@@ -189,11 +196,12 @@ const lookSpeed = 5
  */
 //small angles 'zoom' (obvious)
 //wide angles have to squeeze more into the camera view, thus 'fisheye'. usually 45-75 is good
-const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 200)
+const camera = new THREE.PerspectiveCamera(60, sizes.width / sizes.height, 0.1, 500)
 
 // const camera = new THREE.OrthographicCamera(-1 * aspectRatio, 1 * aspectRatio, 1, -1, 0.1, 100)
 camera.position.z = 0
-camera.position.y = 3
+camera.position.y = 5
+camera.rotation.y;
 scene.add(camera)
 
 /**
@@ -227,45 +235,28 @@ window.addEventListener('resize', (event) => {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)) //pixel ratio can change for a lot of reasons but usually when resize occurs
 })
 
-window.addEventListener('dblclick', (event) => {
-
-    const fullscreenElement = document.fullscreenElement || document.webkitFullscreenElement
-
-    console.log('double click occurred')
-
-    if(!fullscreenElement){
-        if(canvas.requestFullscreen){
-            canvas.requestFullscreen()
-        }
-        else if(canvas.webkitRequestFullscreen){
-            canvas.webkitRequestFullscreen()
-        }
-    }
-
-    else{
-        if(document.exitFullscreen){
-            document.exitFullscreen()
-        }
-        else if(document.webkitExitFullscreen){
-            document.webkitExitFullscreen()
-        }
-    }
-
-})
+function onDoubleClick(event){
+    UTILS.fadeInOrOut()
+    UTILS.hideScreenText()    
+    UTILS.buttonfadeIn()    
+    window.removeEventListener('dblclick')
+}
+window.addEventListener('dblclick', onDoubleClick)
 
 
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 //controls
-const controls = new OrbitControls(camera, canvas)
+// const controls = new OrbitControls(camera, canvas)
 
-controls.enableDamping = true
+// controls.enableDamping = true
 
 let time = Date.now() //init here
 
 const clock = new THREE.Clock()
 
 //gsap.to(mesh.position, {duration: 1, delay: 1, x:2})
+
 
 
 const tick = () => {
@@ -278,7 +269,7 @@ const tick = () => {
     if(hydraScene){
         hydraScene.rotation.y += deltaTime * .5
     }
-        controls.update()
+        // controls.update()
 
     renderer.render(scene, camera)
 
