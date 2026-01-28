@@ -114,12 +114,18 @@ button.active { /*fade in*/
     
 }
 
+.box-left{
+    display: flex;
+    flex-direction:column;
+    align-items:center;
+}
 .box{
     background-color: rgba(33,33,33, 0.25);
     color:white;
     font-family: monospace;
-    text-align: center;
     padding: 20px;
+    display:grid;
+    grid-template-columns: auto 1fr;
     border-radius:0px;
     word-wrap: break-word;
     font-family: monospace;
@@ -132,9 +138,36 @@ canvas.webgl{
 
 #about-us-container .box:nth-child(odd){
     text-align: left;
+    flex-direction: row;
 }
 #about-us-container .box:nth-child(even){
+    grid-template-columns: 1fr auto;
+    flex-direction: row-reverse;
+}
+#about-us-container .box:nth-child(even) .left{
     text-align: right;
+    grid-column: 2;
+}
+
+#about-us-container .box:nth-child(even) .testimonial{
+    grid-column: 1;
+    text-align: right;
+}
+#about-us-container .box:nth-child(even) .identity{
+    text-align: right;
+    align-items: flex-end;
+    grid-column: 2;
+}
+
+.lastname1{
+    color:deeppink;
+    font-weight:bold;
+    font-size:24px;
+}
+.lastname2{
+    color:aqua;
+    font-weight:bold;
+    font-size:24px;
 }
 @media (max-width: 768px){
     #about-us-container{
@@ -143,16 +176,37 @@ canvas.webgl{
 }
 
 .portrait{
-    width: 10%;
+    width: 100px;
+    height:100px;
     padding: 10px;
     height:100px;
+    margin-bottom: 10px;
     background-color: black;
     display:inline-block
 
 }
 
 .name {
-    font-size: 24px;
+    padding-block-end: 10px;
+    font-size: 20px;
+    font-weight: thin;
+    
+}
+
+.lastName {
+    font-size: 22px;
     font-weight: bold;
     
+}
+
+
+.identity{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.testimonial{
+    font-size: 20px;
+    flex:1;
 }
