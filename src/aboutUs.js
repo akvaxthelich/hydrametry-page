@@ -28,125 +28,17 @@ const scene = new THREE.Scene()
 let currentScene = scene
 
 
-
-const ambientLight = new THREE.AmbientLight(0x6fbf2f, 1) 
-scene.add(ambientLight)
-// gui.add(ambientLight, 'intensity').min(0).max(3).step(0.001)
-
-const directionalLight = new THREE.DirectionalLight(0x00fffc, 0.9)
-scene.add(directionalLight)
-directionalLight.position.set(1,.25,0)
-
-const hemisphereLight = new THREE.HemisphereLight(0x6fbf2f, 0x001100, 0.9)
-scene.add(hemisphereLight)
-
-const pointLight = new THREE.PointLight(0xff9000, 1.5, 0, 2)
-scene.add(pointLight)
-
-//Rect area light like photoshoot
-const rectAreaLight = new THREE.RectAreaLight(0x4e00ff,6,1,1)
-scene.add(rectAreaLight)
-rectAreaLight.position.set(-1.5, 0, 1.5)
-rectAreaLight.lookAt(new THREE.Vector3())
-
-const spotLight = new THREE.SpotLight(0x78ff00, 4.5,10, Math.PI * 0.1, 0.25, 1)
-spotLight.position.set(0, 2, 3)
-scene.add(spotLight.target)
-scene.add(spotLight)
-
-const hemisphereLightHelper = new THREE.HemisphereLightHelper(hemisphereLight, 0.2)
-const directionalLightHelper = new THREE.DirectionalLightHelper(directionalLight, 0.2)
-const pointLightHelper = new THREE.PointLightHelper(pointLight, 0.2)
-const spotLightHelper = new THREE.SpotLightHelper(spotLight)
-const rectAreaLightHelper = new RectAreaLightHelper(rectAreaLight)
-
-// scene.add(hemisphereLightHelper)
-// scene.add(directionalLightHelper)
-// scene.add(pointLightHelper)
-// scene.add(spotLightHelper)
-// scene.add(rectAreaLightHelper)
 //Ambient
-const matcapTexture = textureLoader.load('/textures/matcaps/11.png')
+const matcapTexture = textureLoader.load('/textures/matcaps/13.png')
 matcapTexture.colorSpace = THREE.SRGBColorSpace
 const textMat = new THREE.MeshMatcapMaterial({matcap:matcapTexture, wireframe: false})
-// let fbx = null
-// fbxl.load(
-//     '/models/Spatoo/spatoo.fbx',
-// (fbx) => {
-//     scene.add(fbx)
-//     fbx.position.set(0, 6, -15)
-//     fbx.rotation.z = Math.PI / 4      
-//     console.log(fbx)
-// })
-let hydraScene
-gltfl.load(
-    '/models/hydra/hydra.gltf',
-    (gltf) => {
-        scene.add(gltf.scene)
-        gltf.scene.children[0].material = textMat
-        gltf.scene.rotation.y = Math.PI / 2
-        gltf.scene.position.z = -20
-        gltf.scene.position.y = 3
-        console.log(gltf)
-        hydraScene = gltf.scene
-    }
-)
-/**
- * Hydrametry Text
- */
-let textMesh
-fontLoader.load(
-    '/fonts/kenyan_coffee/KenyanCoffeeRegular.json',
-    (font) => 
-    {
-        const textGeometry = new TextGeometry(
-        'Hydrametry Software', {
-        font: font,
-        size: 1,
-        depth: 0.1,
-        curveSegments: 12,
-        bevelSize: 0.02,
-        bevelThickness: 0.15,
-        bevelOffset: 0,
-        bevelEnabled: true,
-            })
-        textGeometry.computeBoundingBox() //doing the translation on the geometry itself makes sure that the geom is centered in the mesh 
-        // textGeometry.translate(
-        //     - textGeometry.boundingBox.max.x * 0.5,
-        //     - textGeometry.boundingBox.max.y * 0.5,
-        //     - textGeometry.boundingBox.max.z * 0.5)
-        textGeometry.center() // ^ same as the above
-
-        
-                const textMesh = new THREE.Mesh(textGeometry, textMat)
-                textMesh.position.y = 5
-                textMesh.position.z = -10
-        
-        scene.add(textMesh)
-        const cubeGeom = new THREE.BoxGeometry(1,1,1)
-        for(let i = 0; i< 500; i++){
-            
-            const cubeMesh = new THREE.Mesh(
-                cubeGeom, textMat)
-
-            cubeMesh.position.set((Math.random() - 0.5) * 100,(Math.random() - 0.5) * 100,(Math.random() - 0.5) * 100)
-
-            cubeMesh.rotation.x = Math.random() * Math.PI
-            cubeMesh.rotation.y = Math.random() * Math.PI
-
-            const scale = Math.random() - .25
-            cubeMesh.scale.set(scale,scale,scale)
-
-            scene.add(cubeMesh)
-
-        }
-    }
-)
 
 /**
  * Floor Plane
  */
-const planeMat = new THREE.MeshBasicMaterial({wireframe:true, side: THREE.DoubleSide, color: 0x6fbf2f})
+
+const planeGroup = new THREE.Group()
+const planeMat = new THREE.MeshBasicMaterial({wireframe:true, side: THREE.DoubleSide, color: 0xff00aa})
 const planeScale = 1000
 const plane = new THREE.Mesh(
     new THREE.PlaneGeometry(1,1, 100, 100),
@@ -155,7 +47,7 @@ const plane = new THREE.Mesh(
 plane.rotation.x = - Math.PI / 2 
 plane.position.y = -15
 plane.scale.set(planeScale,planeScale,planeScale)
-scene.add(plane)
+planeGroup.add(plane)
 
 const plane2 = new THREE.Mesh(
     new THREE.PlaneGeometry(1,1, 100, 100),
@@ -165,9 +57,10 @@ plane2.rotation.x = - Math.PI / 2
 plane2.position.y = 15
 
 plane2.scale.set(planeScale,planeScale,planeScale)
-scene.add(plane2)
+planeGroup.add(plane2)
 
-
+planeGroup.rotation.z = Math.PI / 2
+scene.add(planeGroup)
 /**
  * Lights
  */
@@ -196,7 +89,7 @@ const lookSpeed = 5
  */
 //small angles 'zoom' (obvious)
 //wide angles have to squeeze more into the camera view, thus 'fisheye'. usually 45-75 is good
-const camera = new THREE.PerspectiveCamera(60, sizes.width / sizes.height, 0.1, 500)
+const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 500)
 
 // const camera = new THREE.OrthographicCamera(-1 * aspectRatio, 1 * aspectRatio, 1, -1, 0.1, 100)
 camera.position.z = 0
@@ -265,10 +158,6 @@ const tick = () => {
     //Time 
     const deltaTime = elapsedTime - time 
     time = elapsedTime //update our outside var
-    
-    if(hydraScene){
-        hydraScene.rotation.y += deltaTime * .5
-    }
         // controls.update()
 
     renderer.render(scene, camera)

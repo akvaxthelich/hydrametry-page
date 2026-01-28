@@ -38,7 +38,7 @@
     inset: 0;
     background: black;
     pointer-events: none;
-    z-index: 10;
+    z-index: 15;
     opacity: 1;
     
 }
@@ -56,7 +56,9 @@ html,
 body
 {
     overflow: hidden;
-    background-color: black;
+    overflow-y:auto;
+    background: transparent;
+
 }
 
 /* flexbox */
@@ -99,11 +101,58 @@ button.active { /*fade in*/
     opacity: 1;
 }
 
-
-
-/* #buttonContainer.active {
-    opacity: 1;
+#about-us-container{
+    font-family: monospace;
+    background-color: rgba(10,10,10, 1);
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: minmax(160px, auto);
+    gap: 64px;
+    padding: 40px;
+    z-index: 10;
+    margin: 0 auto;
+    
 }
-#buttonContainer.ready{
-    transition: opacity 2s ease;
-} */
+
+.box{
+    background-color: rgba(33,33,33, 0.25);
+    color:white;
+    font-family: monospace;
+    text-align: center;
+    padding: 20px;
+    border-radius:0px;
+    word-wrap: break-word;
+    font-family: monospace;
+    z-index: 10;
+}
+
+canvas.webgl{
+    z-index: 0;
+}
+
+#about-us-container .box:nth-child(odd){
+    text-align: left;
+}
+#about-us-container .box:nth-child(even){
+    text-align: right;
+}
+@media (max-width: 768px){
+    #about-us-container{
+        grid-template-columns: 1fr;
+    }
+}
+
+.portrait{
+    width: 10%;
+    padding: 10px;
+    height:100px;
+    background-color: black;
+    display:inline-block
+
+}
+
+.name {
+    font-size: 24px;
+    font-weight: bold;
+    
+}
