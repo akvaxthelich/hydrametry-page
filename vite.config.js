@@ -1,3 +1,5 @@
+import { resolve } from 'path'
+
 // import restart from 'vite-plugin-restart'
 
 export default {
@@ -12,7 +14,13 @@ export default {
     {
         outDir: '../dist', // Output in the dist/ folder
         emptyOutDir: true, // Empty the folder first
-        sourcemap: true // Add sourcemap
+        sourcemap: true, // Add sourcemap
+        rollupOptions: {
+            input: {
+                main: resolve(__dirname, 'src/index.html'),
+                about: resolve(__dirname, 'src/aboutUs.html'),
+            },
+        },
     },
     // plugins:
     // [
