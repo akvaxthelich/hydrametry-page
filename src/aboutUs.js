@@ -1,4 +1,4 @@
-import './style.css'
+import '/style.css'
 import * as THREE from 'three'
 import * as UTILS from './UTILS.js'
 import gsap from 'gsap'
@@ -127,6 +127,10 @@ window.addEventListener('resize', (event) => {
     renderer.setSize(sizes.width, sizes.height)
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)) //pixel ratio can change for a lot of reasons but usually when resize occurs
 })
+
+window.addEventListener('load', (event) => {
+
+}
 
 function onDoubleClick(event){
     UTILS.fadeInOrOut()

@@ -11,6 +11,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "bite": "^0.1.0-4",
     "gsap": "3.12",
     "lil-gui": "^0.21.0",
     "three": "^0.181.1",
