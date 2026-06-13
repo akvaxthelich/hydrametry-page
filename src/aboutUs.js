@@ -130,7 +130,7 @@ window.addEventListener('resize', (event) => {
 
 window.addEventListener('load', (event) => {
 
-}
+})
 
 function onDoubleClick(event){
     UTILS.fadeInOrOut()
