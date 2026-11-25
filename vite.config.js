@@ -19,6 +19,7 @@ export default {
                 // By naming the key 'aboutUs', Vite outputs it directly as aboutUs.html
                 aboutUs: resolve(__dirname, 'src/aboutUs.html'),
                 spatooJr: resolve(__dirname, 'src/spatooJr.html'),
+                landing: resolve(__dirname, 'src/landing.html'),
             },
         },
     },
