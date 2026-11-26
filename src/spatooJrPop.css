@@ -1,0 +1,10 @@
+/* Logo canvas larger than the panel and above it. pointer-events: none keeps the links clickable. */
+#logoPop {
+    position: absolute;
+    left: -20%;
+    top: -25%;
+    width: 140%;
+    height: 130%;
+    z-index: 11;
+    pointer-events: none;
+}

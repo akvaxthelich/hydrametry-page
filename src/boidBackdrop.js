@@ -1,6 +1,7 @@
 import './style.css'
 import * as THREE from 'three'
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js'
+import { tilt } from './tilt.js'
 
 // spatooJr: Unity BoidsInSpace backdrop. Nebula skybox + stars + a flock of BoidFodder meshes.
 // Skybox source: Unity TestBox2 (Assets/Textures/Skyboxes/swap.png), a 4x3 cross layout.
@@ -232,7 +233,10 @@ const clock = new THREE.Clock()
 const tick = () => {
     const dt = Math.min(clock.getDelta(), 0.05)
     stepFlock(dt)
-    camera.position.set(cursor.x * 6, cursor.y * 4, 0)
+    // Touch devices use the gyro; desktop uses the mouse.
+    const px = tilt.active ? tilt.x : cursor.x
+    const py = tilt.active ? tilt.y : cursor.y
+    camera.position.set(px * 6, py * 4, 0)
     camera.lookAt(CENTER)
     renderer.render(scene, camera)
     requestAnimationFrame(tick)

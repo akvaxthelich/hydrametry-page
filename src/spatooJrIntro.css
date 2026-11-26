@@ -1,0 +1,35 @@
+/* "Tap to enter" prompt. Same style as #screenText on the index page, placed in the lower half of the screen. */
+#enterText {
+    position: fixed;
+    top: 75%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 20;
+    color: white;
+    font-size: 12px;
+    font-style: italic;
+    font-weight: bold;
+    font-family: monospace;
+    text-align: center;
+    pointer-events: none;
+    transition: 2s ease;
+}
+
+#enterText.hidden {
+    opacity: 0;
+}
+
+/* Breathing: one full cycle every 1s. It sits on the inner span so it doesn't override the outer fade-out. */
+.breathe {
+    display: inline-block;
+    animation: breathe 1s ease-in-out infinite;
+}
+
+@keyframes breathe {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.2; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .breathe { animation: none; }
+}
