@@ -21,6 +21,7 @@ export default {
                 spatooJr: resolve(__dirname, 'src/spatooJr.html'),
                 spatooJrPop: resolve(__dirname, 'src/spatooJrPop.html'),
                 spatooJrIntro: resolve(__dirname, 'src/spatooJrIntro.html'),
+                splash: resolve(__dirname, 'src/splash.html'),
             },
         },
     },

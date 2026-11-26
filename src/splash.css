@@ -1,0 +1,10 @@
+/* Splash: the index scene fills the screen on black. No panel, links or other text. */
+html,
+body {
+    background: black;
+}
+
+canvas.webgl {
+    width: 100%;
+    height: 100%;
+}

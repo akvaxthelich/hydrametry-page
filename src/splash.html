@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hydrametry</title>
+</head>
+<body>
+    <canvas class="webgl"></canvas>
+    <!-- Black at start. The scene fades in after SPLASH_REVEAL_DELAY_MS. -->
+    <div id="fade"></div>
+    <div id="enterText" class="hidden"><span class="breathe">Tap to enter...</span></div>
+    <!-- Runtime settings from the container (APP_* env vars). Must load before the module script. -->
+    <script src="/runtime-config.js"></script>
+    <script type="module" src="./splash.js"></script>
+</body>
+</html>

@@ -52,6 +52,32 @@ const defaults = {
     FLOCK_STEER_RATE: 4,         // how fast the steering force is applied
     FLOCK_MIN_SPEED_RATIO: 0.5,  // boids never slow below this fraction of FLOCK_SPEED
 
+    // Splash page (splash.js): black, logo fades in, "Tap to enter" flashes, tap fades to black and opens spatooJr.
+    SPLASH_REVEAL_DELAY_MS: 1000,   // black for this long before the logo starts to fade in
+    SPLASH_FADE_MS: 2000,           // duration of each fade (in, and out after the tap)
+    SPLASH_PROMPT_DELAY_MS: 500,    // pause after the reveal before "Tap to enter" appears
+    SPLASH_NAVIGATE_GRACE_MS: 500,  // fallback: navigate this long after the fade should have finished
+    ARRIVAL_FADE_MS: 2000,       // spatooJr.html starts black and fades in over this long
+
+    // Splash scene (indexScene.js): the index page's scene, with the prompt placed under the hydra.
+    SPLASH_CAMERA_FOV: 45,
+    SPLASH_CAMERA_Y: 5,
+    SPLASH_CAMERA_FAR: 500,
+    SPLASH_FLOOR_SIZE: 1000,     // side length of each wireframe floor plane
+    SPLASH_FLOOR_Y: 15,          // floors sit at +/- this height
+    SPLASH_CUBE_COUNT: 500,
+    SPLASH_CUBE_SPREAD: 100,     // cubes are scattered in a box this wide
+    SPLASH_HYDRA_Y: 3,
+    SPLASH_HYDRA_Z: -20,
+    SPLASH_HYDRA_SPIN_SPEED: 0.5,
+    SPLASH_TEXT_Y: 5,
+    SPLASH_TEXT_Z: -10,
+    SPLASH_PROMPT_GAP_PX: 60,    // gap between the bottom of the hydra and the top of the "Tap to enter" box
+    SPLASH_PROMPT_FONT_PX: 18,
+    SPLASH_PROMPT_PAD_X_PX: 20,  // inside the box, left and right
+    SPLASH_PROMPT_PAD_Y_PX: 10,  // inside the box, top and bottom
+    SPLASH_PROMPT_BG_ALPHA: 0.6, // opacity of the black box behind the prompt
+
     // Logo in the panel (logo3d.js).
     LOGO_CAMERA_FOV: 35,
     LOGO_CAMERA_DISTANCE: 60,    // further away = less perspective change as the hydra turns
