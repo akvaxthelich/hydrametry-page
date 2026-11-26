@@ -1,0 +1,19 @@
+# Sample compose for the Hydrametry site. Copy into your stack folder (or paste into OMV's compose editor).
+# Build the image first:  docker build -t local/hydrametry-test:latest .
+#
+# Runtime settings go in hydrametry-test.env (copy deploy/hydrametry-test.env.example). Uncomment a line
+# there to change it, then redeploy. For a quick one-off test, use a compose.override.yml with an
+# `environment:` block; it takes priority over the env file.
+
+services:
+  hydrametry-test:
+    image: local/hydrametry-test:latest # built from this repo's Dockerfile
+    container_name: hydrametry-test
+    pull_policy: never # local image only
+    env_file:
+      - hydrametry-test.env
+    ports:
+      - "8101:80" # web UI
+    labels:
+      homelab.group: hydrametry
+    restart: unless-stopped

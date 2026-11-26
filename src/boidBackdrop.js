@@ -2,38 +2,46 @@ import './style.css'
 import * as THREE from 'three'
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js'
 import { tilt } from './tilt.js'
+import { config } from './config.js'
 
 // spatooJr: Unity BoidsInSpace backdrop. Nebula skybox + stars + a flock of BoidFodder meshes.
 // Skybox source: Unity TestBox2 (Assets/Textures/Skyboxes/swap.png), a 4x3 cross layout.
 // Flock rules follow Assets/Scripts/AI/Boid (separation, cohesion, alignment) with the cage
 // steering back in place of Unity's obstacle avoidance. Units are scaled down for the site.
+// Every tunable number comes from config.js (override with APP_<KEY> env vars in the container).
 
 const canvas = document.querySelector('canvas.webgl')
 const renderer = new THREE.WebGLRenderer({ canvas })
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, config.BG_MAX_PIXEL_RATIO))
 renderer.setSize(window.innerWidth, window.innerHeight)
 renderer.outputColorSpace = THREE.SRGBColorSpace
 
 const scene = new THREE.Scene()
-scene.add(new THREE.AmbientLight(0xffffff, 1.2))
-const sun = new THREE.DirectionalLight(0xffffff, 2.5)
+scene.add(new THREE.AmbientLight(0xffffff, config.BG_AMBIENT_INTENSITY))
+const sun = new THREE.DirectionalLight(0xffffff, config.BG_SUN_INTENSITY)
 sun.position.set(1, 2, 3)
 scene.add(sun)
-const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 2000)
+const camera = new THREE.PerspectiveCamera(
+    config.BG_CAMERA_FOV,
+    window.innerWidth / window.innerHeight,
+    config.BG_CAMERA_NEAR,
+    config.BG_CAMERA_FAR,
+)
 scene.add(camera)
 
 // Swarm centre, in front of the camera (camera looks down -z).
-const CENTER = new THREE.Vector3(0, 0, -60)
+const CENTER = new THREE.Vector3(0, 0, config.BG_CENTER_Z)
 
 // Cross cell (col,row) for each cube face, in CubeTexture order: +x, -x, +y, -y, +z, -z.
 const FACE_CELLS = [[2, 1], [0, 1], [1, 0], [1, 2], [1, 1], [3, 1]]
 
 function sliceCross(img) {
     const cell = img.width / 4
+    const face = config.BG_SKY_FACE_PX
     return FACE_CELLS.map(([col, row]) => {
         const c = document.createElement('canvas')
-        c.width = c.height = 1024
-        c.getContext('2d').drawImage(img, col * cell, row * cell, cell, cell, 0, 0, 1024, 1024)
+        c.width = c.height = face
+        c.getContext('2d').drawImage(img, col * cell, row * cell, cell, cell, 0, 0, face, face)
         return c
     })
 }
@@ -46,10 +54,10 @@ new THREE.ImageLoader().load('/textures/space/swap.png', (img) => {
 })
 
 // Stars on top of the nebula.
-const starCount = 3000
+const starCount = config.BG_STAR_COUNT
 const starPos = new Float32Array(starCount * 3)
 for (let i = 0; i < starCount; i++) {
-    const r = 300 + Math.random() * 500
+    const r = config.BG_STAR_MIN_RADIUS + Math.random() * config.BG_STAR_RADIUS_RANGE
     const theta = Math.random() * Math.PI * 2
     const phi = Math.acos(2 * Math.random() - 1)
     starPos[i * 3] = r * Math.sin(phi) * Math.cos(theta)
@@ -58,16 +66,27 @@ for (let i = 0; i < starCount; i++) {
 }
 const starGeom = new THREE.BufferGeometry()
 starGeom.setAttribute('position', new THREE.BufferAttribute(starPos, 3))
-scene.add(new THREE.Points(starGeom, new THREE.PointsMaterial({ color: 0xffffff, size: 1.5, sizeAttenuation: false })))
+scene.add(new THREE.Points(starGeom, new THREE.PointsMaterial({
+    color: 0xffffff,
+    size: config.BG_STAR_SIZE,
+    sizeAttenuation: false,
+})))
 
 // Boids.
-const COUNT = 60
-const INNER = 5      // separation radius
-const OUTER = 10     // cohesion/alignment radius
-const SPEED = 12
-const MAX_GROUP_SIZE = 6 // GroupedBoidManager.maxBoidGroupSize: boids only flock with their own group
-const CAGE_R = 35    // soft boundary around CENTER
-const MODEL_LENGTH = 3 // longest side of the assembled fodder, in scene units
+const COUNT = config.FLOCK_COUNT
+const INNER = config.FLOCK_INNER_RADIUS   // separation radius
+const OUTER = config.FLOCK_OUTER_RADIUS   // cohesion/alignment radius
+const SPEED = config.FLOCK_SPEED
+const MAX_GROUP_SIZE = config.FLOCK_MAX_GROUP_SIZE // GroupedBoidManager.maxBoidGroupSize: boids only flock with their own group
+const CAGE_R = config.FLOCK_CAGE_RADIUS   // soft boundary around CENTER
+const CAGE_STRENGTH = config.FLOCK_CAGE_STRENGTH
+const MODEL_LENGTH = config.FLOCK_MODEL_LENGTH // longest side of the assembled fodder, in scene units
+const SEPARATION_WEIGHT = config.FLOCK_SEPARATION_WEIGHT
+const COHESION_WEIGHT = config.FLOCK_COHESION_WEIGHT
+const ALIGNMENT_WEIGHT = config.FLOCK_ALIGNMENT_WEIGHT
+const STEER_RATE = config.FLOCK_STEER_RATE
+const MIN_SPEED = SPEED * config.FLOCK_MIN_SPEED_RATIO
+const SPAWN_RADIUS = config.FLOCK_SPAWN_RADIUS
 
 // Groups of boids, as in GroupedBoidManager: each group is a list of boid refs.
 const groups = []
@@ -95,7 +114,7 @@ function registerBoid(b) {
 
 const boids = []
 for (let i = 0; i < COUNT; i++) {
-    const p = new THREE.Vector3().randomDirection().multiplyScalar(Math.random() * 20).add(CENTER)
+    const p = new THREE.Vector3().randomDirection().multiplyScalar(Math.random() * SPAWN_RADIUS).add(CENTER)
     const v = new THREE.Vector3().randomDirection().multiplyScalar(SPEED)
     const b = { p, v, index: i, group: null }
     boids.push(b)
@@ -183,23 +202,23 @@ function stepFlock(dt) {
             }
         }
 
-        tmpDesired.copy(tmpSep).multiplyScalar(1.2)
+        tmpDesired.copy(tmpSep).multiplyScalar(SEPARATION_WEIGHT)
         if (nRing > 0) {
             tmpCoh.divideScalar(nRing).sub(b.p)
             tmpAli.divideScalar(nRing)
-            tmpDesired.addScaledVector(tmpCoh, 0.6).addScaledVector(tmpAli, 0.6)
+            tmpDesired.addScaledVector(tmpCoh, COHESION_WEIGHT).addScaledVector(tmpAli, ALIGNMENT_WEIGHT)
         }
 
         // Cage: push back toward CENTER beyond CAGE_R.
         tmpDiff.subVectors(b.p, CENTER)
         const off = tmpDiff.length()
-        if (off > CAGE_R) tmpDesired.addScaledVector(tmpDiff, -((off - CAGE_R) * 2) / off)
+        if (off > CAGE_R) tmpDesired.addScaledVector(tmpDiff, -((off - CAGE_R) * CAGE_STRENGTH) / off)
 
-        b.v.addScaledVector(tmpDesired, dt * 4)
+        b.v.addScaledVector(tmpDesired, dt * STEER_RATE)
         // Keep speed in a band so the flock never stalls or runs away.
         const sp = b.v.length()
         if (sp > SPEED) b.v.multiplyScalar(SPEED / sp)
-        else if (sp < SPEED * 0.5) b.v.setLength(SPEED * 0.5)
+        else if (sp < MIN_SPEED) b.v.setLength(MIN_SPEED)
 
         b.p.addScaledVector(b.v, dt)
 
@@ -226,17 +245,18 @@ window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight
     camera.updateProjectionMatrix()
     renderer.setSize(window.innerWidth, window.innerHeight)
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, config.BG_MAX_PIXEL_RATIO))
 })
 
 const clock = new THREE.Clock()
 const tick = () => {
-    const dt = Math.min(clock.getDelta(), 0.05)
+    const dt = Math.min(clock.getDelta(), config.BG_MAX_FRAME_DT)
     stepFlock(dt)
     // Touch devices use the gyro; desktop uses the mouse.
     const px = tilt.active ? tilt.x : cursor.x
     const py = tilt.active ? tilt.y : cursor.y
-    camera.position.set(px * 6, py * 4, 0)
+    // Parallax sensitivity: how far the camera moves for a full -0.5..0.5 input range.
+    camera.position.set(px * config.PARALLAX_X, py * config.PARALLAX_Y, 0)
     camera.lookAt(CENTER)
     renderer.render(scene, camera)
     requestAnimationFrame(tick)

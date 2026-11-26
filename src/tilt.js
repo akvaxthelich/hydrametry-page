@@ -1,9 +1,11 @@
+import { config } from './config.js'
+
 // Gyro parallax. Device tilt drives the same camera offset that the mouse drives on desktop.
 // Values are scaled to the mouse's -0.5..0.5 range and taken relative to the pose when the page opened.
 export const tilt = { x: 0, y: 0, active: false }
 
-const RANGE_DEG = 40 // tilt, in degrees from the starting pose, that reaches the edge of the range
-const HINT_AFTER_MS = 1500 // if no motion data by then, ask for a tap
+// Sensitivity: config.TILT_RANGE_DEG is the tilt, in degrees from the starting pose, that reaches the edge of the range.
+// The clamp of 0.5 is the edge of the mouse's -0.5..0.5 range, so it is not a tunable.
 let base = null
 let hint = null
 
@@ -11,8 +13,9 @@ function onOrientation(e) {
     if (e.beta == null || e.gamma == null) return
     if (!base) base = { beta: e.beta, gamma: e.gamma }
     const clamp = (v) => Math.max(-0.5, Math.min(0.5, v))
-    tilt.x = clamp((e.gamma - base.gamma) / (RANGE_DEG * 2))
-    tilt.y = clamp((e.beta - base.beta) / (RANGE_DEG * 2))
+    // Range is the full swing either side of base, so the edge is reached at RANGE_DEG in each direction.
+    tilt.x = clamp((e.gamma - base.gamma) / (config.TILT_RANGE_DEG * 2))
+    tilt.y = clamp((e.beta - base.beta) / (config.TILT_RANGE_DEG * 2))
     tilt.active = true
     if (hint) hint.remove()
 }
@@ -22,7 +25,7 @@ function showHint() {
     hint = document.createElement('div')
     hint.textContent = 'Tap to enable tilt'
     Object.assign(hint.style, {
-        position: 'fixed', bottom: '48px', left: '50%', transform: 'translateX(-50%)',
+        position: 'fixed', bottom: `${config.TILT_HINT_BOTTOM_PX}px`, left: '50%', transform: 'translateX(-50%)',
         zIndex: '30', font: '12px monospace', color: '#6fbf2f', background: 'rgba(0,0,0,0.7)',
         border: '1px solid #6fbf2f', padding: '4px 8px', pointerEvents: 'none',
     })
@@ -55,6 +58,6 @@ export function enableTilt() {
         attach()
         // Android Chrome can hold motion events until the page gets a gesture. Any tap starts the listener again.
         window.addEventListener('pointerdown', attach)
-        setTimeout(showHint, HINT_AFTER_MS)
+        setTimeout(showHint, config.TILT_HINT_AFTER_MS)
     }
 }

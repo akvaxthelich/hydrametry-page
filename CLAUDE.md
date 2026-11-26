@@ -36,3 +36,5 @@ Scene units are scaled down from Unity (see `MODEL_LENGTH`), so don't copy numbe
 ## Deployment
 
 The Dockerfile is the only deploy artifact. Nothing in the repo runs it. The image serves the static `dist/` output, so every page must go through `npm run build` to be deployed.
+
+**Runtime settings.** Every tunable number for the spatooJr pages (parallax sensitivity, gyro range, flock, logo fit, camera) is in `src/config.js` with its default. In the container, set `APP_<KEY>` env vars (for example `APP_PARALLAX_X=8`); `docker/40-runtime-config.sh` writes them to `/runtime-config.js` at start, which every spatooJr page loads before its module. Changing them needs a container restart, not a rebuild. Outside the container, `static/runtime-config.js` is an empty placeholder and the defaults apply.

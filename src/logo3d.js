@@ -2,17 +2,20 @@ import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js'
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js'
+import { config } from './config.js'
 
 // Hydrametry logo as on the index page: hydra model above, extruded "Hydrametry Software" text
 // below, both with the same matcap. Drawn into its own small canvas so it can sit inside the panel.
+// Tunables (camera, spin, fit margin, text shape) come from config.js, with the APP_LOGO_* overrides.
 export function mountLogo(canvas) {
     const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true })
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, config.LOGO_MAX_PIXEL_RATIO))
     renderer.outputColorSpace = THREE.SRGBColorSpace
 
     const scene = new THREE.Scene()
-    const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 500)
-    camera.position.set(0, 0, 60) // further away: less perspective change as the hydra turns, so the silhouette stays inside the frame
+    const camera = new THREE.PerspectiveCamera(config.LOGO_CAMERA_FOV, 1, config.LOGO_CAMERA_NEAR, config.LOGO_CAMERA_FAR)
+    // Further away: less perspective change as the hydra turns, so the silhouette stays inside the frame.
+    camera.position.set(0, 0, config.LOGO_CAMERA_DISTANCE)
 
     const matcap = new THREE.TextureLoader().load('/textures/matcaps/13.png')
     matcap.colorSpace = THREE.SRGBColorSpace
@@ -31,21 +34,21 @@ export function mountLogo(canvas) {
         fit()
     })
 
-    // Same text parameters as index.js.
+    // Text shape parameters. Defaults match index.js.
     new FontLoader().load('/fonts/kenyan_coffee/KenyanCoffeeRegular.json', (font) => {
         const geom = new TextGeometry('Hydrametry Software', {
             font,
-            size: 1,
-            depth: 0.1,
-            curveSegments: 12,
-            bevelSize: 0.02,
-            bevelThickness: 0.15,
+            size: config.LOGO_TEXT_SIZE,
+            depth: config.LOGO_TEXT_DEPTH,
+            curveSegments: config.LOGO_TEXT_CURVE_SEGMENTS,
+            bevelSize: config.LOGO_TEXT_BEVEL_SIZE,
+            bevelThickness: config.LOGO_TEXT_BEVEL_THICKNESS,
             bevelOffset: 0,
             bevelEnabled: true,
         })
         geom.center()
         const text = new THREE.Mesh(geom, mat)
-        text.position.y = -1.5 // just under the hydra (model spans roughly y 0.1 to 5.9)
+        text.position.y = config.LOGO_TEXT_OFFSET_Y // just under the hydra (model spans roughly y 0.1 to 5.9)
         logo.add(text)
         fit()
     })
@@ -60,7 +63,7 @@ export function mountLogo(canvas) {
         logo.scale.setScalar(1)
         logo.position.set(0, 0, 0)
         unionBox = new THREE.Box3()
-        const steps = 36
+        const steps = config.LOGO_FIT_SAMPLES
         for (let i = 0; i < steps; i++) {
             hydraPivot.rotation.y = (i / steps) * Math.PI * 2
             logo.updateMatrixWorld(true) // child matrices are stale until this runs, so each sample needs it
@@ -77,7 +80,7 @@ export function mountLogo(canvas) {
         const center = unionBox.getCenter(new THREE.Vector3())
         const visH = 2 * camera.position.z * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))
         const visW = visH * camera.aspect
-        const s = Math.min((visH * 0.85) / size.y, (visW * 0.85) / size.x)
+        const s = Math.min((visH * config.LOGO_FIT_MARGIN) / size.y, (visW * config.LOGO_FIT_MARGIN) / size.x)
         logo.scale.setScalar(s)
         // The group is scaled, so its offset has to be scaled too, or the centre moves off the canvas middle.
         logo.position.copy(center).multiplyScalar(-s)
@@ -97,7 +100,7 @@ export function mountLogo(canvas) {
     const clock = new THREE.Clock()
     const tick = () => {
         const dt = clock.getDelta()
-        hydraPivot.rotation.y += dt * 0.5
+        hydraPivot.rotation.y += dt * config.LOGO_SPIN_SPEED
         if (canvas.clientWidth > 0) renderer.render(scene, camera)
         requestAnimationFrame(tick)
     }
